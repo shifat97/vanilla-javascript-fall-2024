@@ -1,115 +1,71 @@
 const products = [
   {
     id: 1,
-    name: 'Gaming Laptop',
+    name: "Gaming Laptop",
     price: 1500,
-    image: './assets/images/product-placeholder.webp',
-    categories: ['Laptops', 'Gaming'],
+    image: "./assets/images/product-placeholder.webp",
+    categories: ["Laptops", "Gaming"],
   },
   {
     id: 2,
-    name: 'Wireless Mouse',
+    name: "Wireless Mouse",
     price: 50,
-    image: './assets/images/product-placeholder.webp',
-    categories: ['Accessories', 'Peripherals'],
+    image: "./assets/images/product-placeholder.webp",
+    categories: ["Accessories", "Peripherals"],
   },
   {
     id: 3,
-    name: 'Mechanical Keyboard',
+    name: "Mechanical Keyboard",
     price: 100,
-    image: './assets/images/product-placeholder.webp',
-    categories: ['Accessories', 'Peripherals'],
+    image: "./assets/images/product-placeholder.webp",
+    categories: ["Accessories", "Peripherals"],
   },
   {
     id: 4,
-    name: 'External Hard Drive',
+    name: "External Hard Drive",
     price: 120,
-    image: './assets/images/product-placeholder.webp',
-    categories: ['Storage', 'Accessories'],
+    image: "./assets/images/product-placeholder.webp",
+    categories: ["Storage", "Accessories"],
   },
   {
     id: 5,
-    name: 'Graphics Card',
+    name: "Graphics Card",
     price: 500,
-    image: './assets/images/product-placeholder.webp',
-    categories: ['Components', 'Gaming'],
+    image: "./assets/images/product-placeholder.webp",
+    categories: ["Components", "Gaming"],
   },
   {
     id: 6,
-    name: 'Portable SSD',
+    name: "Portable SSD",
     price: 200,
-    image: './assets/images/product-placeholder.webp',
-    categories: ['Storage', 'Accessories'],
+    image: "./assets/images/product-placeholder.webp",
+    categories: ["Storage", "Accessories"],
   },
   {
     id: 7,
-    name: 'Gaming Monitor',
+    name: "Gaming Monitor",
     price: 300,
-    image: './assets/images/product-placeholder.webp',
-    categories: ['Monitors', 'Gaming'],
+    image: "./assets/images/product-placeholder.webp",
+    categories: ["Monitors", "Gaming"],
   },
   {
     id: 8,
-    name: 'All-in-One Printer',
+    name: "All-in-One Printer",
     price: 150,
-    image: './assets/images/product-placeholder.webp',
-    categories: ['Peripherals', 'Printers'],
+    image: "./assets/images/product-placeholder.webp",
+    categories: ["Peripherals", "Printers"],
   },
 ];
-const CART_KEY = 'e-commerce-cart';
 
-const cartList = document.getElementById('cart-items');
-const productGrid = document.getElementById('product-grid');
-const totalPriceComponent = document.getElementById('total-price');
-const checkoutBtn = document.getElementById('checkout-btn');
-const categoryBtnContainer = document.getElementById('category-filters');
-const applyFilterBtn = document.getElementById('apply-filters-btn');
-const clearFilterBtn = document.getElementById('clear-filters-btn');
+const productGrid = document.getElementById("product-grid");
+const cartList = document.getElementById("cart-items");
+const totalPriceComponent = document.getElementById("total-price");
+const categoryContainer = document.getElementById("category-filters");
+const applyFiltersBtn = document.getElementById("apply-filters-btn");
+const clearFiltersBtn = document.getElementById("clear-filters-btn");
 
-class Filter {
-  constructor() {
-    this.filters = this.getFromLocalStorage() || new Set();
-  }
-
-  static KEY = 'e-commerce-filter';
-
-  addFilter(category) {
-    if (this.filters.has(category)) {
-      this.filters.delete(category);
-      return;
-    }
-    this.filters.add(category);
-    this.saveToLocalStorage();
-  }
-
-  saveToLocalStorage() {
-    localStorage.setItem(Filter.KEY, JSON.stringify([...this.filters]));
-  }
-
-  getFromLocalStorage() {
-    return new Set(JSON.parse(localStorage.getItem(Filter.KEY)));
-  }
-
-  hasCategory(category) {
-    return this.filters.has(category);
-  }
-
-  deleteCategory(category) {
-    this.filters.delete(category);
-    this.saveToLocalStorage();
-  }
-
-  isEmpty() {
-    return this.filters.size === 0;
-  }
-
-  clear() {
-    this.filters.clear();
-    this.saveToLocalStorage();
-  }
-}
-
-const filter = new Filter();
+///////////////////////////
+const CART_KEY = "e-commerce-cart";
 
 const saveCartItemsToLocalStorage = (cart) => {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
@@ -120,94 +76,115 @@ const getCartItemsFromLocalStorage = () => {
   if (!cartItems) {
     return [];
   }
+  console.log(cartItems);
   return cartItems;
 };
 
-let cart = getCartItemsFromLocalStorage();
-
-const getProductIndexInCart = (productId) =>
-  cart.findIndex((cartItem) => {
-    if (cartItem.id === productId) {
-      return true;
-    }
-    return false;
-  });
+const cart = getCartItemsFromLocalStorage();
 
 const addProductToCart = (product) => {
-  const productIndexInCart = getProductIndexInCart(product.id);
-
+  const productIndexInCart = cart.findIndex(
+    (cartItem) => cartItem.id === product.id
+  );
+  // the product has not been added to the cart yet
   if (productIndexInCart === -1) {
-    cart.push({ ...product, quantity: 1 });
-  } else {
-    cart[productIndexInCart].quantity++;
-  }
-};
-
-const removeCartItem = (cartItem) => {
-  const productIndexInCart = getProductIndexInCart(cartItem.id);
-  if (productIndexInCart === -1) {
-    alert(`${cartItem.name} doesn't exist in cart!`);
+    cart.push({
+      ...product,
+      quantity: 1,
+    });
     return;
   }
 
-  if (cart[productIndexInCart].quantity > 1) {
-    cart[productIndexInCart].quantity--;
+  cart[productIndexInCart].quantity++;
+};
+
+const removeCartItem = (cartItemToRemove) => {
+  const cartItemIndex = cart.findIndex(
+    (cartItem) => cartItem.id === cartItemToRemove.id
+  );
+  if (cartItemIndex === -1) {
+    alert(`${cartItem.name} doesn't exist in the cart!!`);
+    return;
+  }
+  if (cart[cartItemIndex].quantity > 1) {
+    cart[cartItemIndex].quantity--;
     renderCart(cart);
     return;
   }
-
-  if (confirm('Are you sure?')) {
-    cart.splice(productIndexInCart, 1);
+  if (confirm("Are you sure?")) {
+    cart.splice(cartItemIndex, 1);
     renderCart(cart);
   }
 };
 
-const renderProducts = (products) => {
-  let filteredProducts = products;
+const getRemoveFromCartBtn = (cartItem) => {
+  const removeFromCartBtn = document.createElement("button");
+  removeFromCartBtn.className = "text-red-500 ml-2";
+  removeFromCartBtn.innerText = "Remove";
+  removeFromCartBtn.addEventListener("click", () => {
+    removeCartItem(cartItem);
+  });
+  return removeFromCartBtn;
+};
 
-  if (!filter.isEmpty()) {
-    filteredProducts = products.filter((product) =>
-      product.categories.some((category) => filter.hasCategory(category))
-    );
-  }
+const getCartListItem = (cartItem) => {
+  const cartListItem = document.createElement("li");
+  cartListItem.innerText = `${cartItem.name} x ${cartItem.quantity}`;
 
-  const productCards = filteredProducts.map((product) => {
-    const productCard = getProductCard(product);
-    return productCard;
+  const removeFromCartBtn = getRemoveFromCartBtn(cartItem);
+  cartListItem.appendChild(removeFromCartBtn);
+  return cartListItem;
+};
+
+const renderCart = (cart) => {
+  const cartListItems = cart.map((cartItem) => {
+    const cartListItem = getCartListItem(cartItem);
+    return cartListItem;
   });
 
-  productGrid.innerHTML = '';
-  productGrid.append(...productCards);
-};
+  cartList.innerHTML = "";
+  cartList.append(...cartListItems);
 
+  const totalPrice = cart.reduce((acc, currItem) => {
+    return acc + currItem.price * currItem.quantity;
+  }, 0);
+
+  totalPriceComponent.innerText = `Total = $${totalPrice}`;
+
+  saveCartItemsToLocalStorage(cart);
+};
+///////////////////////////
+
+///////////////////////////
 const getProductImageComponent = (product) => {
-  const productImageComponent = document.createElement('img');
-  productImageComponent.className = 'w-full mb-4';
+  const productImageComponent = document.createElement("img");
+  productImageComponent.className = "w-full mb-4";
   productImageComponent.src = product.image;
   productImageComponent.alt = product.name;
+
   return productImageComponent;
 };
 
 const getProductNameComponent = (productName) => {
-  const productNameComponent = document.createElement('h3');
-  productNameComponent.className = 'text-lg font-semibold';
+  const productNameComponent = document.createElement("h3");
+  productNameComponent.className = "text-lg font-semibold";
   productNameComponent.innerText = productName;
   return productNameComponent;
 };
 
 const getProductPriceComponent = (productPrice) => {
-  const productPriceComponent = document.createElement('p');
-  productPriceComponent.className = 'text-gray-700';
+  const productPriceComponent = document.createElement("p");
+  productPriceComponent.classList = "text-gray-700";
   productPriceComponent.innerText = `$${productPrice}`;
   return productPriceComponent;
 };
 
 const getAddToCartBtn = (product) => {
-  const addToCartBtn = document.createElement('button');
+  const addToCartBtn = document.createElement("button");
   addToCartBtn.className =
-    'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2';
-  addToCartBtn.innerText = 'Add to Cart';
-  addToCartBtn.addEventListener('click', () => {
+    "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2";
+  addToCartBtn.innerText = "Add to Cart";
+  addToCartBtn.addEventListener("click", () => {
     addProductToCart(product);
     renderCart(cart);
   });
@@ -215,8 +192,8 @@ const getAddToCartBtn = (product) => {
 };
 
 const getProductCard = (product) => {
-  const productCard = document.createElement('div');
-  productCard.className = 'bg-white p-4 rounded shadow';
+  const productCard = document.createElement("div");
+  productCard.className = "bg-white p-4 rounded shadow";
 
   const productImageComponent = getProductImageComponent(product);
   const productNameComponent = getProductNameComponent(product.name);
@@ -232,98 +209,98 @@ const getProductCard = (product) => {
 
   return productCard;
 };
+/////////////////////////////////////////////
 
-const getRemoveFromCartBtn = (cartItem) => {
-  const removeFromCartBtn = document.createElement('button');
-  removeFromCartBtn.className = 'text-red-500 ml-2';
-  removeFromCartBtn.innerText = 'Remove';
-  removeFromCartBtn.addEventListener('click', () => {
-    removeCartItem(cartItem);
-  });
-  return removeFromCartBtn;
-};
+const renderProducts = (products) => {
+  let filteredProducts = [...products];
 
-const getCartListItem = (cartItem) => {
-  const cartListItem = document.createElement('li');
-  cartListItem.innerText = `${cartItem.name} x ${cartItem.quantity}`;
-  const removeFromCartBtn = getRemoveFromCartBtn(cartItem);
-  cartListItem.appendChild(removeFromCartBtn);
-  return cartListItem;
-};
-
-const renderCart = (cart) => {
-  cartList.innerHTML = '';
-
-  cart.forEach((cartItem) => {
-    const cartListItem = getCartListItem(cartItem);
-    cartList.appendChild(cartListItem);
-  });
-
-  const totalPrice = cart.reduce((acc, currItem) => {
-    const subTotal = currItem.quantity * currItem.price;
-    return acc + subTotal;
-  }, 0);
-
-  totalPriceComponent.innerText = `Total = $${totalPrice}`;
-  saveCartItemsToLocalStorage(cart);
-};
-
-const getUniqueCategories = (products) => {
-  const flattenCategories = products
-    .map((product) => product.categories)
-    .flat();
-  return [...new Set(flattenCategories)];
-};
-
-const getCategoryBtn = (category) => {
-  const categoryBtn = document.createElement('button');
-  categoryBtn.className =
-    'hover:bg-gray-300  font-semibold py-2 px-4 rounded mr-2';
-
-  if (filter.hasCategory(category)) {
-    categoryBtn.classList.add('bg-blue-600', 'text-white');
-  } else {
-    categoryBtn.classList.add('bg-gray-200', 'text-gray-800');
+  if (filters.length > 0) {
+    filteredProducts = products.filter((product) => {
+      if (product.categories.some((category) => filters.includes(category))) {
+        return true;
+      }
+      return false;
+    });
   }
 
-  categoryBtn.innerText = category;
-  categoryBtn.addEventListener('click', () => {
-    if (filter.hasCategory(category)) {
-      filter.deleteCategory(category);
-    } else {
-      filter.addFilter(category);
-    }
+  const productCards = filteredProducts.map((product) => {
+    const productCard = getProductCard(product);
+    return productCard;
+  });
 
+  productGrid.innerHTML = "";
+  productGrid.append(...productCards);
+};
+
+////////////////////////////////////
+const FILTER_KEY = " e-commerce-filter";
+
+const saveFiltersToLocalStorage = (filters) => {
+  localStorage.setItem(FILTER_KEY, JSON.stringify(filters));
+};
+
+const getFiltersFromLocalStorage = () => {
+  const savedFilters = JSON.parse(localStorage.getItem(FILTER_KEY));
+  if (!savedFilters) {
+    return [];
+  }
+  return savedFilters;
+};
+
+let filters = getFiltersFromLocalStorage();
+
+const getCategoryBtn = (categoryName) => {
+  const categoryBtn = document.createElement("button");
+  categoryBtn.className =
+    "hover:bg-gray-300 font-semibold py-2 px-4 rounded mr-2 bg-gray-200 text-gray-800";
+
+  if (filters.includes(categoryName)) {
+    categoryBtn.classList.add("bg-blue-600");
+  } else {
+    categoryBtn.classList.add("bg-gray-200");
+  }
+
+  categoryBtn.innerText = categoryName;
+
+  categoryBtn.addEventListener("click", () => {
+    const filterIndex = filters.findIndex((filter) => filter === categoryName);
+    if (filterIndex === -1) {
+      filters.push(categoryName);
+    } else {
+      filters.splice(filterIndex, 1);
+    }
+    saveFiltersToLocalStorage(filters);
     renderCategories(products);
   });
   return categoryBtn;
 };
 
 const renderCategories = (products) => {
-  const categories = getUniqueCategories(products);
+  const categories = Array.from(
+    new Set(products.map((product) => product.categories).flat())
+  );
+
   const categoryBtns = categories.map((category) => {
     const categoryBtn = getCategoryBtn(category);
     return categoryBtn;
   });
-  categoryBtnContainer.innerHTML = '';
-  categoryBtnContainer.append(...categoryBtns);
+
+  categoryContainer.innerHTML = "";
+  categoryContainer.append(...categoryBtns);
 };
+
+applyFiltersBtn.addEventListener("click", () => {
+  renderProducts(products);
+});
+
+clearFiltersBtn.addEventListener("click", () => {
+  filters = [];
+  saveFiltersToLocalStorage(filters);
+  renderCategories(products);
+  renderProducts(products);
+});
+////////////////////////////////////
 
 renderProducts(products);
 renderCart(cart);
 renderCategories(products);
-
-checkoutBtn.addEventListener('click', () => {
-  cart = [];
-  renderCart(cart);
-});
-
-applyFilterBtn.addEventListener('click', () => {
-  renderProducts(products);
-});
-
-clearFilterBtn.addEventListener('click', () => {
-  filter.clear();
-  renderCategories(products);
-  renderProducts(products);
-});
